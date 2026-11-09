@@ -7,6 +7,7 @@ import mod_img
 import metrics
 import stretching_mthd
 import equalization_mthd
+import denoising_mthd
 
 IMAGE_NAMES = ["arena", "firenze", "ippopotamo", "panda", "penna"]
 
@@ -17,7 +18,7 @@ DEGRADED_DIR = BASE_DIR / "data" / "degraded_img"
 OUTPUT_DIR_PROCESSED = BASE_DIR / "output" / "processed_img"
 STRETCHING_DIR = OUTPUT_DIR_PROCESSED / "stretching_img"
 EQUALIZATION_DIR = OUTPUT_DIR_PROCESSED / "equalization_img"
-
+DENOISING_DIR = OUTPUT_DIR_PROCESSED / "denoising_img"
 
 def main():
     np.random.seed(42)
@@ -26,6 +27,7 @@ def main():
     os.makedirs(DEGRADED_DIR, exist_ok=True)
     os.makedirs(STRETCHING_DIR, exist_ok=True)
     os.makedirs(EQUALIZATION_DIR, exist_ok=True)
+    os.makedirs(DENOISING_DIR, exist_ok=True)
 
     results = []   # one entry per (image, method): later written to metrics.csv
 
@@ -67,7 +69,28 @@ def main():
         equalized_real = equalization_mthd.equalization_HSV(resized_image)
         cv2.imwrite(str(EQUALIZATION_DIR / f"{name}_real_equalized_hsv.png"), equalized_real)
 
-        print(f"{name}: PSNR baseline = {psnr_baseline:.2f} dB, stretching = {psnr_stretched:.2f} dB , equalization HSV = {psnr_equalized:.2f} dB")
+        # --- Method 4: denoising (bilateral) ---
+        denoised_bilateral = denoising_mthd.denoising_bilateral(degraded_image, d=9, sigma_color=75, sigma_space=75)
+        cv2.imwrite(str(DENOISING_DIR / f"{name}_denoised_bilateral.png"), denoised_bilateral)
+        psnr_denoised_bilateral = metrics.metric_psnr(resized_image, denoised_bilateral)
+        results.append({"image": name, "method": "denoising_bilateral", "psnr": psnr_denoised_bilateral})
+
+        #on the real (resized) image -> qualitative evaluation only
+        denoised_bilateral_real = denoising_mthd.denoising_bilateral(resized_image, d=9, sigma_color=75, sigma_space=75)
+        cv2.imwrite(str(DENOISING_DIR / f"{name}_real_denoised_bilateral.png"), denoised_bilateral_real)    
+
+        # --- Method 4 : denoising (non-local means) ---
+        denoised_nlm = denoising_mthd.denoising_non_local_means(degraded_image, h=10, template_window_size=7, search_window_size=21)
+        cv2.imwrite(str(DENOISING_DIR / f"{name}_denoised_nlm.png"), denoised_nlm)
+        psnr_denoised_nlm = metrics.metric_psnr(resized_image, denoised_nlm)
+        results.append({"image": name, "method": "denoising_nlm", "psnr": psnr_denoised_nlm})
+
+        #on the real (resized) image -> qualitative evaluation only
+        denoised_nlm_real = denoising_mthd.denoising_non_local_means(resized_image, h=10, template_window_size=7, search_window_size=21)
+        cv2.imwrite(str(DENOISING_DIR / f"{name}_real_denoised_nlm.png"), denoised_nlm_real)    
+
+
+        print(f"{name}: PSNR baseline = {psnr_baseline:.2f} dB, stretching = {psnr_stretched:.2f} dB , equalization HSV = {psnr_equalized:.2f} dB, denoising bilateral = {psnr_denoised_bilateral:.2f} dB, denoising NLM = {psnr_denoised_nlm:.2f} dB")
 
 
 if __name__ == "__main__":
