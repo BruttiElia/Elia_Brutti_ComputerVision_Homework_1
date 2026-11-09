@@ -6,6 +6,7 @@ from pathlib import Path
 import mod_img
 import metrics
 import stretching_mthd
+import equalization_mthd
 
 IMAGE_NAMES = ["arena", "firenze", "ippopotamo", "panda", "penna"]
 
@@ -15,6 +16,7 @@ RESIZED_DIR = BASE_DIR / "data" / "resized_img"
 DEGRADED_DIR = BASE_DIR / "data" / "degraded_img"
 OUTPUT_DIR_PROCESSED = BASE_DIR / "output" / "processed_img"
 STRETCHING_DIR = OUTPUT_DIR_PROCESSED / "stretching_img"
+EQUALIZATION_DIR = OUTPUT_DIR_PROCESSED / "equalization_img"
 
 
 def main():
@@ -23,6 +25,7 @@ def main():
     os.makedirs(RESIZED_DIR, exist_ok=True)
     os.makedirs(DEGRADED_DIR, exist_ok=True)
     os.makedirs(STRETCHING_DIR, exist_ok=True)
+    os.makedirs(EQUALIZATION_DIR, exist_ok=True)
 
     results = []   # one entry per (image, method): later written to metrics.csv
 
@@ -54,7 +57,17 @@ def main():
         stretched_real = stretching_mthd.stretching_canalRGB(resized_image, 0, 255)
         cv2.imwrite(str(STRETCHING_DIR / f"{name}_real_stretching.png"), stretched_real)
 
-        print(f"{name}: PSNR baseline = {psnr_baseline:.2f} dB, stretching = {psnr_stretched:.2f} dB")
+        # --- Method 3: histogram equalization (HSV) ---
+        equalized_hsv = equalization_mthd.equalization_HSV(degraded_image)
+        cv2.imwrite(str(EQUALIZATION_DIR / f"{name}_equalized_hsv.png"), equalized_hsv)
+        psnr_equalized = metrics.metric_psnr(resized_image, equalized_hsv)
+        results.append({"image": name, "method": "equalization_hsv", "psnr": psnr_equalized})
+
+        #on the real (resized) image -> qualitative evaluation only
+        equalized_real = equalization_mthd.equalization_HSV(resized_image)
+        cv2.imwrite(str(EQUALIZATION_DIR / f"{name}_real_equalized_hsv.png"), equalized_real)
+
+        print(f"{name}: PSNR baseline = {psnr_baseline:.2f} dB, stretching = {psnr_stretched:.2f} dB , equalization HSV = {psnr_equalized:.2f} dB")
 
 
 if __name__ == "__main__":
