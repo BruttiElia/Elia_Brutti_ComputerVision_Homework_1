@@ -11,8 +11,7 @@ def to_rgb(image_bgr):
     return cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
 
 
-def save_comparison_figure(name, resized, degraded, real_results, degraded_results,
-                           metrics_by_method, out_path):
+def save_comparison_figure(name, resized, degraded, real_results, degraded_results, metrics_by_method, out_path):
     """
     Save a 2-row comparison grid for one image.
     Row 1 (real):      resized original | each method applied to the original

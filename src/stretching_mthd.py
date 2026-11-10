@@ -1,22 +1,18 @@
 import numpy as np
-import cv2
 
-PERCENTILE_LOW = 0.5
-PERCENTILE_HIGH = 99.5
-
-def stretching_canalRGB (image, a, b): 
+def stretching_canalBGR (image, a, b , PERCENTILE_LOW, PERCENTILE_HIGH): 
 
     """
-    Stretch the pixel values of an RGB image to a specified range [a, b].
+    Stretch the pixel values of an BGR image to a specified range [a, b].
     This function applies linear contrast stretching to each channel independently.
     
     Parameters:
-    - image: Input RGB image (numpy array).
+    - image: Input BGR image (numpy array).
     - a: Lower bound of the desired output range.
     - b: Upper bound of the desired output range.
     
     Returns:
-    - Stretched RGB image (numpy array) with pixel values in the range [a, b].
+    - Stretched BGR image (numpy array) with pixel values in the range [a, b].
     """
     # Ensure the input image is in float format for calculations
     image_float = image.astype(np.float32)

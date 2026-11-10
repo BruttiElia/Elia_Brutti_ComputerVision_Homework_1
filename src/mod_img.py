@@ -5,11 +5,8 @@
 import cv2
 import numpy as np
 
-ALPHA = 0.7
-SIGMA = 10
-SIZE = 256
 
-def resize_image(image, size=SIZE):
+def resize_image(image, size):
     """
     Resize the image so that its shorter side equals `size`,
     then crop the center to obtain a size x size image.
@@ -28,7 +25,7 @@ def resize_image(image, size=SIZE):
     x0 = (new_w - size) // 2
     return resized[y0:y0 + size, x0:x0 + size]
 
-def reducing_contrast(image, alpha=ALPHA):
+def reducing_contrast(image, alpha):
     """
     Reduce the contrast of the image while preserving its mean brightness.
     alpha < 1 compresses pixel values toward the image mean.
@@ -38,7 +35,7 @@ def reducing_contrast(image, alpha=ALPHA):
     reduced_contrast_image = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
     return reduced_contrast_image
 
-def gaussian_noise(image, sigma=SIGMA):
+def gaussian_noise(image, sigma):
     """
     Add zero-mean Gaussian noise to the image.
     sigma controls the noise intensity (standard deviation).
@@ -48,11 +45,11 @@ def gaussian_noise(image, sigma=SIGMA):
     noisy_image = np.clip(noisy_image, 0, 255)
     return noisy_image.astype(np.uint8)
 
-def modify_image(image):
+def modify_image(image, alpha, sigma):
     """
     Apply a series of modifications to the image: reduce contrast and add Gaussian noise.
     """
-    reduced_contrast_image = reducing_contrast(image)
-    final_image = gaussian_noise(reduced_contrast_image)
+    reduced_contrast_image = reducing_contrast(image, alpha)
+    final_image = gaussian_noise(reduced_contrast_image, sigma)
     
     return final_image
