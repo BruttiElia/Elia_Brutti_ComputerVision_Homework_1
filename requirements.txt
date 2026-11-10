@@ -1,3 +1,4 @@
-numpy<2.3.0
-opencv-python
-matplotlib
+numpy==2.0.2
+opencv-python==5.0.0.93
+scikit-image==0.24.0
+matplotlib==3.9.4
