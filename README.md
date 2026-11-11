@@ -171,3 +171,14 @@ Five color photographs, each showing at least one of the conditions required by 
 **Source and license:** all photographs were taken by the author (Elia Brutti).
 
 **Note on evaluation:** the original (resized) images serve as references only for evaluating the **synthetic** degradations. In real-world scenarios a clean reference is generally not available, which is why the methods are also applied to the real images and evaluated qualitatively.
+
+## Troubleshooting
+
+(This warning was written because, to check that the test worked, I tried it on my desktop Mac)
+
+- **Do not copy the `.venv` folder between computers.** A virtual environment is tied to the machine where it was created: always recreate it with the commands in *Installation*.
+- **macOS: "*.dylib* cannot be opened" warning.** This happens if the project folder (including `.venv`) was transferred via AirDrop or downloaded as an archive, because macOS marks those files as quarantined. Delete `.venv` and recreate it with `pip install -r requirements.txt`. If the warning persists, remove the quarantine flag from the project folder with:
+
+  ```bash
+  xattr -dr com.apple.quarantine .
+  ```

@@ -23,12 +23,12 @@ PERCENTILE_LOW = 0.5     # lower percentile for contrast stretching
 PERCENTILE_HIGH = 99.5   # upper percentile for contrast stretching
 
 # Method 4: denoising
-BILATERAL_D = 9
-BILATERAL_SIGMA_COLOR = 75
-BILATERAL_SIGMA_SPACE = 75
-NLM_H = 10
-NLM_TEMPLATE_WINDOW = 7
-NLM_SEARCH_WINDOW = 21
+BILATERAL_D = 9                # diameter of the pixel neighborhood
+BILATERAL_SIGMA_COLOR = 75     # how different two colors can be and still be averaged
+BILATERAL_SIGMA_SPACE = 75     # how far two pixels can be and still be averaged
+NLM_H = 10                     # filter strength (higher = more noise removed, less detail)
+NLM_TEMPLATE_WINDOW = 7        # size of the patches compared
+NLM_SEARCH_WINDOW = 21         # size of the area where similar patches are searched
 # -------------------------------------------------------------------------------------------
 
 IMAGE_NAMES = ["arena", "firenze", "ippopotamo", "panda", "penna"]
@@ -79,6 +79,7 @@ def main():
         results.append({"image": name, "method": "baseline", "psnr": psnr_baseline, "ssim": ssim_baseline})
 
         # Collect results of this image for the comparison figure
+        # (keys are the panel titles shown in the figure, not the CSV method names)
         real_results = {}
         degraded_results = {}
         metrics_by_method = {"baseline": (psnr_baseline, ssim_baseline)}
@@ -100,45 +101,48 @@ def main():
         metrics_by_method["stretching"] = (psnr_stretched, ssim_stretched)
 
         # --- Method 3: histogram equalization (HSV) ---
+        # on the degraded image -> evaluated with metrics
         equalized_hsv = equalization_mthd.equalization_HSV(degraded_image)
-        cv2.imwrite(str(EQUALIZATION_DIR / f"{name}_degraded_equalization_hsv.png"), equalized_hsv)      # CHANGED
+        cv2.imwrite(str(EQUALIZATION_DIR / f"{name}_degraded_equalization_hsv.png"), equalized_hsv)      
         psnr_equalized = metrics.metric_psnr(resized_image, equalized_hsv)
         ssim_equalized = metrics.metric_ssim(resized_image, equalized_hsv)
         results.append({"image": name, "method": "equalization_hsv", "psnr": psnr_equalized, "ssim": ssim_equalized})
 
         # on the real (resized) image -> qualitative evaluation only
         equalized_real = equalization_mthd.equalization_HSV(resized_image)
-        cv2.imwrite(str(EQUALIZATION_DIR / f"{name}_real_equalization_hsv.png"), equalized_real)         # CHANGED
+        cv2.imwrite(str(EQUALIZATION_DIR / f"{name}_real_equalization_hsv.png"), equalized_real)        
 
         degraded_results["equalization HSV"] = equalized_hsv
         real_results["equalization HSV"] = equalized_real
         metrics_by_method["equalization HSV"] = (psnr_equalized, ssim_equalized)
 
         # --- Method 4: denoising (bilateral) ---
+        # on the degraded image -> evaluated with metrics
         denoised_bilateral = denoising_mthd.denoising_bilateral(degraded_image, d=BILATERAL_D, sigma_color=BILATERAL_SIGMA_COLOR, sigma_space=BILATERAL_SIGMA_SPACE)
-        cv2.imwrite(str(DENOISING_DIR / f"{name}_degraded_denoising_bilateral.png"), denoised_bilateral)  # CHANGED
+        cv2.imwrite(str(DENOISING_DIR / f"{name}_degraded_denoising_bilateral.png"), denoised_bilateral)  
         psnr_denoised_bilateral = metrics.metric_psnr(resized_image, denoised_bilateral)
         ssim_denoised_bilateral = metrics.metric_ssim(resized_image, denoised_bilateral)
         results.append({"image": name, "method": "denoising_bilateral", "psnr": psnr_denoised_bilateral, "ssim": ssim_denoised_bilateral})
 
         # on the real (resized) image -> qualitative evaluation only
         denoised_bilateral_real = denoising_mthd.denoising_bilateral(resized_image, d=BILATERAL_D, sigma_color=BILATERAL_SIGMA_COLOR, sigma_space=BILATERAL_SIGMA_SPACE)
-        cv2.imwrite(str(DENOISING_DIR / f"{name}_real_denoising_bilateral.png"), denoised_bilateral_real)  # CHANGED
+        cv2.imwrite(str(DENOISING_DIR / f"{name}_real_denoising_bilateral.png"), denoised_bilateral_real)  
 
         degraded_results["bilateral"] = denoised_bilateral
         real_results["bilateral"] = denoised_bilateral_real
         metrics_by_method["bilateral"] = (psnr_denoised_bilateral, ssim_denoised_bilateral)
 
         # --- Method 4: denoising (non-local means) ---
+        # on the degraded image -> evaluated with metrics        
         denoised_nlm = denoising_mthd.denoising_non_local_means(degraded_image, h=NLM_H, template_window_size=NLM_TEMPLATE_WINDOW, search_window_size=NLM_SEARCH_WINDOW)
-        cv2.imwrite(str(DENOISING_DIR / f"{name}_degraded_denoising_nlm.png"), denoised_nlm)              # CHANGED
+        cv2.imwrite(str(DENOISING_DIR / f"{name}_degraded_denoising_nlm.png"), denoised_nlm)              
         psnr_denoised_nlm = metrics.metric_psnr(resized_image, denoised_nlm)
         ssim_denoised_nlm = metrics.metric_ssim(resized_image, denoised_nlm)
         results.append({"image": name, "method": "denoising_nlm", "psnr": psnr_denoised_nlm, "ssim": ssim_denoised_nlm})
 
         # on the real (resized) image -> qualitative evaluation only
         denoised_nlm_real = denoising_mthd.denoising_non_local_means(resized_image, h=NLM_H, template_window_size=NLM_TEMPLATE_WINDOW, search_window_size=NLM_SEARCH_WINDOW)
-        cv2.imwrite(str(DENOISING_DIR / f"{name}_real_denoising_nlm.png"), denoised_nlm_real)             # CHANGED
+        cv2.imwrite(str(DENOISING_DIR / f"{name}_real_denoising_nlm.png"), denoised_nlm_real)             
 
         degraded_results["NLM"] = denoised_nlm
         real_results["NLM"] = denoised_nlm_real

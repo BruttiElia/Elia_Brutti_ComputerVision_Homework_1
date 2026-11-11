@@ -1,6 +1,8 @@
 
-#  this module contains functions to modify images using OpenCV. 
-
+"""
+Data preparation: resizing and synthetic degradation of the input images
+(contrast reduction + Gaussian noise).
+"""
 
 import cv2
 import numpy as np
@@ -27,8 +29,9 @@ def resize_image(image, size):
 
 def reducing_contrast(image, alpha):
     """
-    Reduce the contrast of the image while preserving its mean brightness.
-    alpha < 1 compresses pixel values toward the image mean.
+    Reduce the contrast of the image while preserving its mean brightness:
+    out = mean + alpha * (I - mean), with the global mean over all channels.
+    alpha < 1 compresses pixel values toward the mean.
     """
     mean = np.mean(image)
     beta = mean * (1 - alpha)
@@ -40,14 +43,14 @@ def gaussian_noise(image, sigma):
     Add zero-mean Gaussian noise to the image.
     sigma controls the noise intensity (standard deviation).
     """
-    noise = np.random.normal(0, sigma, image.shape)
-    noisy_image = image.astype(np.float32) + noise
-    noisy_image = np.clip(noisy_image, 0, 255)
+    noise = np.random.normal(0, sigma, image.shape)   # independent noise per pixel and channel
+    noisy_image = image.astype(np.float32) + noise    # float avoids uint8 overflow/wrap-around
+    noisy_image = np.clip(noisy_image, 0, 255)        # back to the valid range
     return noisy_image.astype(np.uint8)
 
 def modify_image(image, alpha, sigma):
     """
-    Apply a series of modifications to the image: reduce contrast and add Gaussian noise.
+    Synthetic degradation: first reduce the contrast, then add Gaussian noise.
     """
     reduced_contrast_image = reducing_contrast(image, alpha)
     final_image = gaussian_noise(reduced_contrast_image, sigma)

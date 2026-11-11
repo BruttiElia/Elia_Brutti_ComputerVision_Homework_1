@@ -1,8 +1,12 @@
-# Comparison figures for the report: one 2-row grid per image.
+
+"""
+Comparison figures for the report: one 2-row grid per image.
+"""
+
 
 import cv2
 import matplotlib
-matplotlib.use("Agg")            # no windows: figures are only saved to file
+matplotlib.use("Agg")    # must be set before importing pyplot; no windows, figures are only saved to file
 import matplotlib.pyplot as plt
 
 
@@ -45,6 +49,6 @@ def save_comparison_figure(name, resized, degraded, real_results, degraded_resul
 
     fig.suptitle(f"{name} - metrics (row 2) computed against original (real)", fontsize=12)
     fig.tight_layout()
-    fig.subplots_adjust(hspace=0.35)
+    fig.subplots_adjust(hspace=0.35)     # extra vertical space so the two-line titles do not overlap
     fig.savefig(out_path, dpi=150)
     plt.close(fig)                 # free memory
